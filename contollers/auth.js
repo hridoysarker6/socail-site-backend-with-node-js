@@ -70,3 +70,44 @@ export const currentUser = async (req, res) => {
     return res.status(400).send("could not fetch user");
   }
 };
+
+export const forgotPassword = async (req, res) => {
+  // console.log(req.body);
+  // validation
+  const { email, newPassword, secret } = req.body;
+
+  if (!newPassword || newPassword < 6) {
+    return res.json({
+      error: "New password is required and should be greater than 6 character",
+    });
+  }
+  if (!secret) {
+    return res.json({
+      error: "secret is required",
+    });
+  }
+
+  const user = await User.findOne({ email, secret });
+
+  if (!user) {
+    return res.json({
+      error: "we can't verify you with those details",
+    });
+  }
+
+  try {
+    const hashed = await hashPassword(newPassword);
+
+    await User.findByIdAndUpdate(user._id, { password: hashed });
+
+    return res.json({
+      ok: true,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.json({
+      error: "something went wrong. try again",
+    });
+  }
+};
