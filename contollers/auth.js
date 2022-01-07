@@ -1,6 +1,7 @@
 import User from "../models/User";
 import { comparePassword, hashPassword } from "../helpers/auth";
 import jwt from "jsonwebtoken";
+import { nanoid } from "nanoid";
 export const register = async (req, res) => {
   // console.log("register endpoint", req.body);
   const { name, email, password, secret } = req.body;
@@ -22,6 +23,7 @@ export const register = async (req, res) => {
     email,
     password: hashedPassword,
     secret,
+    userName: nanoid(6),
   });
   try {
     await user.save();
@@ -109,5 +111,131 @@ export const forgotPassword = async (req, res) => {
     return res.json({
       error: "something went wrong. try again",
     });
+  }
+};
+
+export const profileUpdate = async (req, res) => {
+  try {
+    let data = {};
+    if (req.body.userName) {
+      data.userName = req.body.userName;
+    }
+    if (req.body.name) {
+      data.name = req.body.name;
+    }
+    if (req.body.about) {
+      data.about = req.body.about;
+    }
+    if (req.body.secret) {
+      data.secret = req.body.secret;
+    }
+    if (req.body.password) {
+      if (req.body.password.length < 6) {
+        return res.json({
+          error: "Password is required and should be min 6 character long.",
+        });
+      } else {
+        data.password = await hashPassword(req.body.password);
+      }
+    }
+    if (req.body.image) {
+      data.image = req.body.image;
+    }
+
+    let user = await User.findByIdAndUpdate(req.user._id, data, { new: true });
+    user.password = undefined;
+    user.secret = undefined;
+    // console.log(user);
+    return res.json(user);
+  } catch (err) {
+    if (err.code == 11000) {
+      return res.json({ error: "Duplicate user name" });
+    }
+    console.log(err);
+  }
+};
+
+export const findPeople = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    //user following
+    let following = user.following;
+    following.push(user._id);
+
+    const people = await User.find({ _id: { $nin: following } })
+      .select("-password -secret")
+      .limit(10);
+    res.json(people);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const addFollower = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.body._id, {
+      $addToSet: { followers: req.user._id },
+    });
+
+    next();
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const userFollow = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $addToSet: { following: req.body._id },
+      },
+      { new: true }
+    ).select("-password -secret");
+
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const userfollowing = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const following = await User.find({ _id: user.following }).limit(100);
+    res.json(following);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const userfollowers = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const followers = await User.find({ _id: user.followers }).limit(100);
+    res.json(followers);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const removeFollower = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.body._id, {
+      $pull: { followers: req.user._id },
+    });
+    next();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const userUnfollow = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.user._id, {
+      $pull: { following: req.body._id },
+    });
+    res.json(user);
+  } catch (error) {
+    console.log(error);
   }
 };

@@ -24,10 +24,18 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    userName: {
+      type: String,
+      unique: true,
+      required: true,
+    },
     about: {},
-    photo: String,
+    image: {
+      url: String,
+      public_id: String,
+    },
     following: [{ type: Schema.ObjectId, ref: "User" }],
-    follower: [{ type: Schema.ObjectId, ref: "User" }],
+    followers: [{ type: Schema.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

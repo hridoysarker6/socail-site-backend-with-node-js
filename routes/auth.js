@@ -4,6 +4,13 @@ import {
   login,
   currentUser,
   forgotPassword,
+  profileUpdate,
+  findPeople,
+  addFollower,
+  userFollow,
+  userfollowing,
+  removeFollower,
+  userUnfollow,
 } from "../contollers/auth.js";
 import { requireSignin } from "../middleware/index.js";
 const router = express.Router();
@@ -13,5 +20,13 @@ router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 
 router.get("/current-user", requireSignin, currentUser);
+
+router.put("/profile-update", requireSignin, profileUpdate);
+router.get("/find-people", requireSignin, findPeople);
+
+router.put("/user-follow", requireSignin, addFollower, userFollow);
+router.put("/user-unfollow", requireSignin, removeFollower, userUnfollow);
+
+router.get("/user-following", requireSignin, userfollowing);
 
 module.exports = router;
