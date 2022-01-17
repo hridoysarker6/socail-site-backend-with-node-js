@@ -11,6 +11,8 @@ import {
   userfollowing,
   removeFollower,
   userUnfollow,
+  searchUser,
+  getUser,
 } from "../contollers/auth.js";
 import { requireSignin } from "../middleware/index.js";
 const router = express.Router();
@@ -28,5 +30,8 @@ router.put("/user-follow", requireSignin, addFollower, userFollow);
 router.put("/user-unfollow", requireSignin, removeFollower, userUnfollow);
 
 router.get("/user-following", requireSignin, userfollowing);
+
+router.get("/search-user/:query", searchUser);
+router.get("/user/:userName", getUser);
 
 module.exports = router;
