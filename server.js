@@ -10,6 +10,7 @@ require("dotenv").config();
 const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http, {
+  path: "/socket.io",
   cors: {
     origin: "http://localhost:3000",
     methods: ["GET", "POST"],
@@ -41,8 +42,18 @@ app.use(
 readdirSync("./routes").map((r) => app.use("/api", require(`./routes/${r}`)));
 
 // Socket io
+// io.on("connect", (socket) => {
+//   // console.log("socket io=>", socket.id);
+//   socket.on("send-message", (message) => {
+//     // console.log("new message", message);
+//     socket.broadcast.emit("received-message", message);
+//   });
+// });
+//new post broadcasting
 io.on("connect", (socket) => {
-  console.log("socket io=>", socket.id);
+  socket.on("new-post", (newPost) => {
+    socket.broadcast.emit("new-post", newPost);
+  });
 });
 
 const port = process.env.PORT || 8000;

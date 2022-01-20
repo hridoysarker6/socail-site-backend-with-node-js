@@ -18,7 +18,11 @@ import {
   posts,
   getPost,
 } from "../contollers/post.js";
-import { requireSignin, canEditDeletePost } from "../middleware/index.js";
+import {
+  requireSignin,
+  canEditDeletePost,
+  isAdmin,
+} from "../middleware/index.js";
 const router = express.Router();
 
 router.post("/create-post", requireSignin, createPost);
@@ -52,5 +56,8 @@ router.get("/total-posts", totalPosts);
 router.get("/posts", posts);
 
 router.get("/post/:_id", getPost);
+
+// admin
+router.delete("/admin/delete-post/:_id", requireSignin, isAdmin, deletePost);
 
 module.exports = router;

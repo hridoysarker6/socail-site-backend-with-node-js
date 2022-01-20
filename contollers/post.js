@@ -20,10 +20,18 @@ export const createPost = async (req, res) => {
 
   try {
     const post = new Post({ content, image, postedBy: req.user._id });
-    post.save();
-    return res.json({
-      ok: true,
-    });
+    await post.save();
+
+    const postWithUser = await Post.findById(post._id).populate(
+      "postedBy",
+      "-password -secret"
+    );
+
+    res.json(postWithUser);
+
+    // return res.json({
+    //   ok: true,
+    // });
   } catch (error) {
     console.log(error);
     res.sendStatus(400);

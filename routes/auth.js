@@ -14,7 +14,7 @@ import {
   searchUser,
   getUser,
 } from "../contollers/auth.js";
-import { requireSignin } from "../middleware/index.js";
+import { isAdmin, requireSignin } from "../middleware/index.js";
 const router = express.Router();
 
 router.post("/register", register);
@@ -33,5 +33,8 @@ router.get("/user-following", requireSignin, userfollowing);
 
 router.get("/search-user/:query", searchUser);
 router.get("/user/:userName", getUser);
+
+// admin
+router.get("/current-admin", requireSignin, isAdmin, currentUser);
 
 module.exports = router;
